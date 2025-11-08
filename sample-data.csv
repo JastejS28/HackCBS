@@ -1,0 +1,11 @@
+Product,Category,Price,Quantity,Revenue
+Laptop,Electronics,1200,15,18000
+Mouse,Electronics,25,50,1250
+Keyboard,Electronics,75,30,2250
+Monitor,Electronics,300,20,6000
+Desk,Furniture,400,10,4000
+Chair,Furniture,200,25,5000
+Notebook,Stationery,5,100,500
+Pen,Stationery,2,200,400
+Headphones,Electronics,150,35,5250
+Webcam,Electronics,80,40,3200
