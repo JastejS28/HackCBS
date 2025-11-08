@@ -56,9 +56,9 @@ app.use(errorHandler);
 connectDB()
     .then(() => {
         app.listen(PORT, () => {
-            console.log(`✓ Server running on http://localhost:${PORT}`);
-            console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
-            console.log(`✓ MongoDB Connected`);
+            console.log(` Server running on http://localhost:${PORT}`);
+            console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
+            console.log(` MongoDB Connected`);
         });
     })
     .catch((err) => {
