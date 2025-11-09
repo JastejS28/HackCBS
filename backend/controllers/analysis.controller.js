@@ -76,8 +76,20 @@ export const askQuestion = async (req, res) => {
             });
         }
 
-        // Generate AI response using RAG
-        const answer = await generateAIResponse(question, analysis);
+        // Build messages array for chat API
+        const messages = [
+            // Include previous conversation history
+            ...analysis.conversations.map(conv => [
+                { role: 'user', content: conv.question },
+                { role: 'assistant', content: conv.answer }
+            ]).flat(),
+            // Add current question
+            { role: 'user', content: question }
+        ];
+
+        // Generate AI response using external chat API (returns markdown)
+        const response = await generateAIResponse(messages, analysis.dataSource);
+        const answer = response.content;
 
         // Add to conversation history
         analysis.conversations.push({
@@ -91,7 +103,8 @@ export const askQuestion = async (req, res) => {
             success: true,
             data: {
                 question,
-                answer
+                answer,
+                isMarkdown: response.isMarkdown
             }
         });
     } catch (error) {

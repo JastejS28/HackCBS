@@ -13,24 +13,13 @@ const Home = () => {
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
 
-    // Database form state
-    const [dbForm, setDbForm] = useState({
-        name: '',
-        dbType: 'mysql',
-        host: '',
-        port: '',
-        username: '',
-        password: '',
-        databaseName: ''
-    });
+    // Database connection string state
+    const [connectionString, setConnectionString] = useState('');
+    const [connectionName, setConnectionName] = useState('');
 
     // File upload state
     const [file, setFile] = useState(null);
     const [fileName, setFileName] = useState('');
-
-    const handleDbChange = (e) => {
-        setDbForm({ ...dbForm, [e.target.name]: e.target.value });
-    };
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -52,7 +41,10 @@ const Home = () => {
         setError('');
 
         try {
-            const response = await dataSourceAPI.submitDatabase(dbForm);
+            const response = await dataSourceAPI.submitDatabase({
+                name: connectionName || 'Database Connection',
+                connectionString: connectionString
+            });
             navigate(`/analysis/${response.data.analysisId}`, { 
                 state: { processing: true } 
             });
@@ -162,56 +154,34 @@ const Home = () => {
                             <form onSubmit={handleDatabaseSubmit} className="home-form">
                                 <div className="home-form-group">
                                     <label className="label">
-                                        Connection Name
+                                        Connection Name (Optional)
                                     </label>
                                     <input
                                         type="text"
-                                        name="name"
-                                        value={dbForm.name}
-                                        onChange={handleDbChange}
-                                        required
+                                        value={connectionName}
+                                        onChange={(e) => setConnectionName(e.target.value)}
                                         placeholder="e.g., My Production DB"
                                         className="input"
                                     />
                                 </div>
                                 <div className="home-form-group">
                                     <label className="label">
-                                        Database Type
+                                        Database Connection String
                                     </label>
-                                    <select
-                                        name="dbType"
-                                        value={dbForm.dbType}
-                                        onChange={handleDbChange}
+                                    <input
+                                        type="text"
+                                        value={connectionString}
+                                        onChange={(e) => setConnectionString(e.target.value)}
+                                        required
+                                        placeholder="e.g., mysql://username:password@host:port/database"
                                         className="input"
-                                    >
-                                        <option value="mysql">MySQL</option>
-                                        <option value="postgres">PostgreSQL</option>
-                                        <option value="mongodb">MongoDB</option>
-                                    </select>
-                                </div>
-                                <div className="home-form-row">
-                                    <div className="home-form-group">
-                                        <label className="label">Host</label>
-                                        <input type="text" name="host" value={dbForm.host} onChange={handleDbChange} required placeholder="localhost" className="input" />
-                                    </div>
-                                    <div className="home-form-group">
-                                        <label className="label">Port</label>
-                                        <input type="number" name="port" value={dbForm.port} onChange={handleDbChange} required placeholder="3306" className="input" />
-                                    </div>
-                                </div>
-                                <div className="home-form-row">
-                                    <div className="home-form-group">
-                                        <label className="label">Username</label>
-                                        <input type="text" name="username" value={dbForm.username} onChange={handleDbChange} required placeholder="root" className="input" />
-                                    </div>
-                                    <div className="home-form-group">
-                                        <label className="label">Password</label>
-                                        <input type="password" name="password" value={dbForm.password} onChange={handleDbChange} className="input" />
-                                    </div>
-                                </div>
-                                <div className="home-form-group">
-                                    <label className="label">Database Name</label>
-                                    <input type="text" name="databaseName" value={dbForm.databaseName} onChange={handleDbChange} required placeholder="mydatabase" className="input" />
+                                    />
+                                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                                        Examples:<br/>
+                                        • MySQL: mysql://user:pass@localhost:3306/mydb<br/>
+                                        • PostgreSQL: postgresql://user:pass@localhost:5432/mydb<br/>
+                                        • MongoDB: mongodb://user:pass@localhost:27017/mydb
+                                    </p>
                                 </div>
                                 <button
                                     type="submit"

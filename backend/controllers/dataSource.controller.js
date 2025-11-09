@@ -1,49 +1,39 @@
 import DataSource from '../models/dataSource.model.js';
 import Analysis from '../models/analysis.model.js';
 import { processFileUpload, validateDatabaseConnection, extractDataFromDB, extractDataFromFile } from '../utils/dataProcessor.js';
+import { analyzeDataWithExternalAPI } from '../utils/aiService.js';
 
 // Submit database connection
 export const submitDatabaseConnection = async (req, res) => {
     try {
-        const { name, dbType, host, port, username, password, databaseName } = req.body;
+        const { name, connectionString } = req.body;
 
         // Validate required fields
-        if (!name || !dbType || !host || !username || !databaseName) {
+        if (!connectionString) {
             return res.status(400).json({
                 success: false,
-                message: 'Missing required fields'
+                message: 'Connection string is required'
             });
         }
 
-        // Validate connection (async - returns connection status)
-        const isValid = await validateDatabaseConnection({
-            dbType,
-            host,
-            port: port || (dbType === 'mysql' ? 3306 : dbType === 'postgresql' ? 5432 : 27017),
-            username,
-            password,
-            databaseName
-        });
-
-        if (!isValid) {
-            return res.status(400).json({
-                success: false,
-                message: 'Unable to connect to database. Please check your credentials.'
-            });
+        // Parse connection string to get dbType
+        let dbType = 'unknown';
+        if (connectionString.startsWith('mysql://')) {
+            dbType = 'mysql';
+        } else if (connectionString.startsWith('postgresql://') || connectionString.startsWith('postgres://')) {
+            dbType = 'postgresql';
+        } else if (connectionString.startsWith('mongodb://')) {
+            dbType = 'mongodb';
         }
 
-        // Create data source
+        // Create data source with connection string
         const dataSource = await DataSource.create({
             user: req.user._id,
-            name,
+            name: name || 'Database Connection',
             type: 'database',
             dbConfig: {
-                dbType,
-                host,
-                port: port || (dbType === 'mysql' ? 3306 : dbType === 'postgresql' ? 5432 : 27017),
-                username,
-                password, // TODO: Encrypt in production
-                databaseName
+                connectionString: connectionString,
+                dbType: dbType
             },
             status: 'pending'
         });
@@ -154,42 +144,69 @@ export const getDataSources = async (req, res) => {
 // Async processing function
 async function processDataSource(dataSourceId, analysisId) {
     try {
+        console.log('='.repeat(80));
+        console.log('PROCESSING DATA SOURCE');
+        console.log('Data Source ID:', dataSourceId);
+        console.log('Analysis ID:', analysisId);
+        console.log('='.repeat(80));
+
         const dataSource = await DataSource.findById(dataSourceId);
         const analysis = await Analysis.findById(analysisId);
 
-        if (!dataSource || !analysis) return;
-
-        // Extract data based on type
-        let extractedData;
-        if (dataSource.type === 'database') {
-            extractedData = await extractDataFromDB(dataSource.dbConfig);
-        } else {
-            extractedData = await extractDataFromFile(dataSource.fileConfig);
+        if (!dataSource || !analysis) {
+            console.error('DataSource or Analysis not found!');
+            return;
         }
 
-        // Update data source metadata
-        dataSource.metadata = {
-            rowCount: extractedData.rowCount,
-            columnCount: extractedData.columnCount,
-            columns: extractedData.columns,
-            sampleData: extractedData.sampleData
-        };
+        console.log('Calling external API for analysis...');
+        
+        // Send connection string or file URI directly to external API
+        // No local data extraction - external API handles everything
+        const analysisResult = await analyzeDataWithExternalAPI(dataSource);
+
+        console.log('='.repeat(80));
+        console.log('ANALYSIS RESULT RECEIVED');
+        console.log('Summary:', analysisResult.summary);
+        console.log('Key Insights:', analysisResult.keyInsights);
+        console.log('Has raw3DData:', !!analysisResult.raw3DData);
+        console.log('Has rawUploadData:', !!analysisResult.rawUploadData);
+        if (analysisResult.raw3DData) {
+            console.log('raw3DData schema:', analysisResult.raw3DData.schema);
+            console.log('raw3DData imageUrl:', analysisResult.raw3DData.imageUrl);
+        }
+        console.log('='.repeat(80));
+
+        // Update data source status
         dataSource.status = 'completed';
         await dataSource.save();
 
-        // Generate AI insights (placeholder - implement with OpenAI)
-        const insights = await generateInsights(extractedData);
-
-        // Update analysis
-        analysis.summary = insights.summary;
-        analysis.keyInsights = insights.keyInsights;
-        analysis.visualizations = insights.visualizations;
+        // Update analysis with results from external API
+        analysis.summary = analysisResult.summary || 'Analysis completed';
+        analysis.keyInsights = analysisResult.keyInsights || [];
+        analysis.visualizations = analysisResult.visualizations || [];
+        
+        // CRITICAL: Store the raw API responses
+        analysis.rawUploadData = analysisResult.rawUploadData || {};
+        analysis.raw3DData = analysisResult.raw3DData || {};
+        
         analysis.status = 'completed';
         analysis.processingTime = Date.now() - analysis.createdAt;
+        
         await analysis.save();
+        
+        console.log('='.repeat(80));
+        console.log('ANALYSIS SAVED TO DATABASE');
+        console.log('Analysis ID:', analysis._id);
+        console.log('Status:', analysis.status);
+        console.log('Has raw3DData in DB:', !!analysis.raw3DData);
+        console.log('='.repeat(80));
 
     } catch (error) {
-        console.error('Processing error:', error);
+        console.error('='.repeat(80));
+        console.error('PROCESSING ERROR');
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('='.repeat(80));
         
         // Update status to failed
         await DataSource.findByIdAndUpdate(dataSourceId, { status: 'failed' });

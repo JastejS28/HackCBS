@@ -19,15 +19,11 @@ const dataSourceSchema = new mongoose.Schema({
     },
     // For database connections
     dbConfig: {
+        connectionString: String,  // Full connection string from user
         dbType: {
             type: String,
-            enum: ['mysql', 'postgresql', 'mongodb']
-        },
-        host: String,
-        port: Number,
-        username: String,
-        password: String, // In production, encrypt this
-        databaseName: String
+            enum: ['mysql', 'postgresql', 'mongodb', 'unknown']
+        }
     },
     // For file uploads
     fileConfig: {
