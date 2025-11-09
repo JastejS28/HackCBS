@@ -86,6 +86,104 @@
 
 
 
+// import { useState } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import { useAuth } from '../context/AuthContext';
+// import { FaGoogle } from 'react-icons/fa';
+// import { SiGooglesheets } from "react-icons/si";
+// import './Login.css';
+
+// const Login = () => {
+//     const [loading, setLoading] = useState(false);
+//     const [error, setError] = useState('');
+//     const { signInWithGoogle } = useAuth();
+//     const navigate = useNavigate();
+
+//     const handleGoogleSignIn = async () => {
+//         try {
+//             setLoading(true);
+//             setError('');
+//             await signInWithGoogle();
+//             navigate('/');
+//         } catch (err) {
+//             console.error('Login error:', err);
+//             setError('Failed to sign in. Please try again.');
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     return (
+//         <div className="login-container">
+//             <div className="login-content">
+//                 {/* Left Section - Login Form */}
+//                 <div className="login-left-section">
+//                     <div className="login-header">
+//                         {/* <div className="login-icon">
+//                             <SiGooglesheets size={48} />
+//                         </div> */}
+//                         <h1 className="login-title">
+//                             Prism
+//                         </h1>
+//                         <p className="login-subtitle">
+//                             Sign in to unlock the power of your data.
+//                         </p>
+//                     </div>
+
+//                     <div className="login-card">
+//                         <h2 className="login-card-title">
+//                             Welcome Back
+//                         </h2>
+
+//                         {error && (
+//                             <div className="alert alert-error">
+//                                 {error}
+//                             </div>
+//                         )}
+
+//                         <button
+//                             onClick={handleGoogleSignIn}
+//                             disabled={loading}
+//                             className="google-sign-in-btn"
+//                         >
+//                             {loading ? (
+//                                 <>
+//                                     <div className="spinner"></div>
+//                                     <span>Signing in...</span>
+//                                 </>
+//                             ) : (
+//                                 <>
+//                                     <FaGoogle size={20} />
+//                                     <span>Sign in with Google</span>
+//                                 </>
+//                             )}
+//                         </button>
+
+//                         <div className="login-footer">
+//                             By signing in, you agree to our Terms of Service.
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 {/* Right Section - Spline 3D Model */}
+//                 <div className="login-spline-section">
+//                     <div className="login-spline-container">
+//                         <spline-viewer 
+//                             url="https://prod.spline.design/qlbKQI-L3LSJLRQN/scene.splinecode"
+//                             style={{ width: '100%', height: '100%' }}
+//                         ></spline-viewer>
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
+// export default Login;
+
+
+
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';

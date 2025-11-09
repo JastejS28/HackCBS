@@ -534,6 +534,35 @@ export const analyzeDataWithExternalAPI = async (dataSource) => {
 // Generate AI response for chat using external API (returns markdown + image URL)
 export const generateAIResponse = async (messages, dataSource) => {
     try {
+        // STEP 1: Upload database first (required by the API)
+        console.log('📤 Uploading database to external API before chat...');
+        
+        // Extract the connection string from dataSource object
+        let sourceValue;
+        if (dataSource.type === 'database') {
+            sourceValue = dataSource.dbConfig.connectionString;
+        } else {
+            sourceValue = dataSource.fileConfig.filePath;
+        }
+        
+        console.log('Source type:', dataSource.type);
+        console.log('Source value:', sourceValue);
+        
+        const uploadPayload = {
+            source: sourceValue
+        };
+
+        await axios.post(UPLOAD_DB_URL, uploadPayload, {
+            headers: {
+                'Content-Type': 'application/json',
+                'accept': 'application/json'
+            },
+            timeout: 60000
+        });
+
+        console.log('✅ Database uploaded successfully, proceeding with chat...');
+
+        // STEP 2: Send chat request
         const chatPayload = {
             messages: messages
         };
