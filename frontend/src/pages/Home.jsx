@@ -88,7 +88,7 @@ const Home = () => {
                 <div className="home-header-content">
                     <div className="home-logo">
                         <SiGooglesheets className="home-logo-icon" />
-                        <span className="home-logo-text">AI Data Analytics</span>
+                        <span className="home-logo-text">Prism</span>
                     </div>
 
                     <div className="home-user-section">
@@ -97,16 +97,16 @@ const Home = () => {
                                 <img src={user.photoURL} alt="Profile" className="home-user-avatar" />
                             )}
                             <div className="home-user-details">
-                                <p className="home-user-name">{user?.displayName || 'User'}</p>
-                                <p className="home-user-email">{user?.email}</p>
+                                {/* <p className="home-user-name">{user?.displayName || 'User'}</p> */}
+                                {/* <p className="home-user-email">{user?.email}</p> */}
                             </div>
                         </div>
-                        <button
+                        {/* <button
                             onClick={signOut}
                             className="home-signout-btn"
                         >
                             <FaSignOutAlt size={20} />
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </header>
@@ -258,10 +258,10 @@ const Home = () => {
                     {/* Right Column - Spline 3D Model */}
                     <div className="home-spline-section">
                         <div className="home-spline-container">
-                            <spline-viewer 
+                            {/* <spline-viewer 
                                 url="https://prod.spline.design/1msw0B9s8wG3O1t6/scene.splinecode"
                                 style={{ width: '100%', height: '100%' }}
-                            ></spline-viewer>
+                            ></spline-viewer> */}
                         </div>
                     </div>
                 </div>

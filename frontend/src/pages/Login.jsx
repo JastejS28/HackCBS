@@ -119,11 +119,11 @@ const Login = () => {
                 {/* Left Section - Login Form */}
                 <div className="login-left-section">
                     <div className="login-header">
-                        <div className="login-icon">
+                        {/* <div className="login-icon">
                             <SiGooglesheets size={48} />
-                        </div>
+                        </div> */}
                         <h1 className="login-title">
-                            AI-Driven DB RAG & Analytics
+                            Prism
                         </h1>
                         <p className="login-subtitle">
                             Sign in to unlock the power of your data.
@@ -169,7 +169,7 @@ const Login = () => {
                 <div className="login-spline-section">
                     <div className="login-spline-container">
                         <spline-viewer 
-                            url="https://prod.spline.design/W0yHxwW4SwifmagH/scene.splinecode"
+                            url="https://prod.spline.design/qlbKQI-L3LSJLRQN/scene.splinecode"
                             style={{ width: '100%', height: '100%' }}
                         ></spline-viewer>
                     </div>

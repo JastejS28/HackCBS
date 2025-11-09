@@ -76,38 +76,83 @@ export const askQuestion = async (req, res) => {
             });
         }
 
-        // Build messages array for chat API
-        const messages = [
-            // Include previous conversation history
-            ...analysis.conversations.map(conv => [
-                { role: 'user', content: conv.question },
-                { role: 'assistant', content: conv.answer }
-            ]).flat(),
-            // Add current question
-            { role: 'user', content: question }
-        ];
+        console.log('='.repeat(80));
+        console.log('BUILDING CHAT MESSAGES');
+        console.log('Question:', question);
+        console.log('Previous conversations:', analysis.conversations?.length || 0);
 
-        // Generate AI response using external chat API (returns markdown)
+        // Build messages array for chat API - MUST USE 'human' and 'ai' types
+        const messages = [];
+        
+        // Add conversation history
+        if (analysis.conversations && analysis.conversations.length > 0) {
+            analysis.conversations.forEach(conv => {
+                messages.push({
+                    type: 'human',  // Changed from 'user' to 'human'
+                    content: conv.question
+                });
+                messages.push({
+                    type: 'ai',  // Changed from 'assistant' to 'ai'
+                    content: conv.answer
+                });
+            });
+        }
+        
+        // Add current question
+        messages.push({
+            type: 'human',  // Changed from 'user' to 'human'
+            content: question
+        });
+
+        console.log('Messages to send:', JSON.stringify(messages, null, 2));
+        console.log('='.repeat(80));
+
+        // Generate AI response using external chat API
         const response = await generateAIResponse(messages, analysis.dataSource);
         const answer = response.content;
+        
+        console.log('='.repeat(80));
+        console.log('CHAT RESPONSE RECEIVED');
+        console.log('Answer length:', answer?.length || 0);
+        console.log('Has image URL:', !!response.imageUrl);
+        if (response.imageUrl) {
+            console.log('Image URL:', response.imageUrl);
+        }
+        console.log('='.repeat(80));
 
-        // Add to conversation history
-        analysis.conversations.push({
+        // Add to conversation history with image URL if present
+        const conversationEntry = {
             question,
             answer,
             timestamp: new Date()
-        });
+        };
+        
+        if (response.imageUrl) {
+            conversationEntry.imageUrl = response.imageUrl;
+            console.log('Saving image URL to conversation:', response.imageUrl);
+        }
+        
+        analysis.conversations.push(conversationEntry);
         await analysis.save();
+
+        console.log('Conversation saved. Total conversations:', analysis.conversations.length);
 
         res.status(200).json({
             success: true,
             data: {
                 question,
                 answer,
+                imageUrl: response.imageUrl || null,
                 isMarkdown: response.isMarkdown
             }
         });
     } catch (error) {
+        console.error('='.repeat(80));
+        console.error('ASK QUESTION ERROR');
+        console.error('Error:', error.message);
+        console.error('Stack:', error.stack);
+        console.error('='.repeat(80));
+        
         res.status(500).json({
             success: false,
             message: error.message
@@ -119,7 +164,7 @@ export const askQuestion = async (req, res) => {
 export const exportReport = async (req, res) => {
     try {
         const { id } = req.params;
-        const { format } = req.query; // pdf or excel
+        const { format } = req.query;
 
         const analysis = await Analysis.findOne({
             _id: id,
@@ -140,7 +185,6 @@ export const exportReport = async (req, res) => {
             });
         }
 
-        // Generate PDF report
         const pdfBuffer = await generatePDFReport(analysis);
 
         res.setHeader('Content-Type', 'application/pdf');
